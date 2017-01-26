@@ -1,5 +1,5 @@
 {
-  "name": "vanilla gl",
+  "name": "vanillagl",
   "version": "1.0.0",
   "description": "Little 3D framework",
   "main": "app/index.js",
