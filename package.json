@@ -1,7 +1,7 @@
 {
-  "name": "raymarching-starter-kit",
+  "name": "vanilla gl",
   "version": "1.0.0",
-  "description": "simple starter for raymarching ",
+  "description": "Little 3D framework",
   "main": "app/index.js",
   "scripts": {
     "start": "npm run dev",
