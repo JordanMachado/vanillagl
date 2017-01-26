@@ -2,7 +2,7 @@
 
 Little 3D framework.
 
-The goal of this project is to learn webgl & glsl stuff by making my own framework
+The goal of this project is to learn webgl & glsl stuff by making my own framework (big inspiration from framework below)
 
 # Installation
 ```bash
