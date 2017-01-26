@@ -27,9 +27,18 @@ var gl = new Vanilla.GL();
 var camera = new Vanilla.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.z = -30;
 
-var material = new Vanilla.Material();
-var geom = new Vanilla.BoxGeometry();
-var mesh = new Vanilla.Mesh(geom, material);
+var time = 0;
+var mesh = new Vanilla.Mesh(new Vanilla.BoxGeometry(), new Vanilla.Material({
+  uniforms: {
+    time: {
+      type: 'uniform1f',
+      value: 1
+    }
+  }
+}));
+
+var objects = [];
+objects.push(mesh);
 
 document.body.appendChild(gl.canvas);
 
@@ -42,9 +51,12 @@ _miniListener2.default.add('resize', function () {
 
 function draw() {
   (0, _raf2.default)(draw);
+  time += 0.1;
+  mesh.material.uniforms.time.value = time;
   mesh.rx += 0.05;
   mesh.rz += 0.02;
-  gl.render(camera, mesh);
+
+  gl.render(camera, objects);
 }
 
 },{"./vanilla":14,"gl-matrix":15,"mini-listener":25,"raf":28}],2:[function(require,module,exports){
@@ -107,17 +119,36 @@ var GL = function () {
     key: 'render',
     value: function render(camera, mesh) {
       this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-      this.currentMesh = mesh;
-      if (this.currentMesh.material.depthTest) {
-        _State2.default.enable(gl.DEPTH_TEST);
-      }
-      this.useShader(this.currentMesh.material.shader);
-      this.computeNormalMatrix();
-      this.setDefaultUniforms(camera);
+      for (var i = 0; i < mesh.length; i += 1) {
+        this.currentMesh = mesh[i];
+        if (this.currentMesh.material.depthTest) {
+          _State2.default.enable(gl.DEPTH_TEST);
+        } else {
+          _State2.default.disable(gl.DEPTH_TEST);
+        }
+        this.useShader(this.currentMesh.material.shader);
+        this.computeNormalMatrix();
+        this.setDefaultUniforms(camera);
+        if (this.currentMesh.material.uniforms) {
+          this.setUniforms();
+        }
 
-      this.bindBuffer(this.currentMesh);
-      // gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.geometry.bufferIndices);
-      gl.drawElements(gl.TRIANGLES, this.currentMesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
+        this.bindBuffer(this.currentMesh);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.currentMesh.geometry.indices.buffer);
+        switch (this.currentMesh.material.drawType) {
+          case 'triangles':
+            gl.drawElements(gl.TRIANGLES, this.currentMesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
+            break;
+          case 'lines':
+            gl.drawElements(gl.LINES, this.currentMesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
+            break;
+          case 'points':
+            gl.drawElements(gl.POINTS, this.currentMesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
+            break;
+          default:
+
+        }
+      }
     }
   }, {
     key: 'computeNormalMatrix',
@@ -135,6 +166,24 @@ var GL = function () {
       this.shader.uniform('projectionMatrix', 'uniformMatrix4fv', camera.projection);
     }
   }, {
+    key: 'setUniforms',
+    value: function setUniforms() {
+      if (this.currentMesh.material.uniforms) {
+        var uniforms = this.currentMesh.material.uniforms;
+        //  console.log(mesh.material.uniforms);
+        for (var key in uniforms) {
+          var _uniform = uniforms[key];
+          if (_uniform.type === 'uniform1i') {
+
+            this.shader.uniform(key, _uniform.type, _uniform.value.index);
+            _uniform.value.bind(_uniform.value.index);
+          } else {
+            this.shader.uniform(key, _uniform.type, _uniform.value);
+          }
+        }
+      }
+    }
+  }, {
     key: 'useShader',
     value: function useShader(shader) {
       if (this.shader === shader) return;
@@ -150,7 +199,6 @@ var GL = function () {
         var attrPosition = this.getAttribLoc(this.shader.program, attribute.name);
         gl.vertexAttribPointer(attrPosition, attribute.itemSize, gl.FLOAT, false, 0, 0);
         _State2.default.enableAttribute(attrPosition);
-        // gl.enableVertexAttribArray(attrPosition);
       }
     }
   }, {
@@ -191,7 +239,7 @@ var Material = function Material() {
       _ref$depthTest = _ref.depthTest,
       depthTest = _ref$depthTest === undefined ? true : _ref$depthTest,
       _ref$uniforms = _ref.uniforms,
-      uniforms = _ref$uniforms === undefined ? {} : _ref$uniforms,
+      uniforms = _ref$uniforms === undefined ? null : _ref$uniforms,
       _ref$drawType = _ref.drawType,
       drawType = _ref$drawType === undefined ? 'triangles' : _ref$drawType,
       _ref$side = _ref.side,
@@ -199,7 +247,7 @@ var Material = function Material() {
       _ref$vertexShader = _ref.vertexShader,
       vertexShader = _ref$vertexShader === undefined ? "#define GLSLIFY 1\nattribute vec3 position;\nattribute vec2 uv;\nattribute vec3 normal;\n\nuniform mat4 worldMatrix;\nuniform mat4 normalMatrix;\nuniform mat4 viewMatrix;\nuniform mat4 projectionMatrix;\n\nvarying vec2 vUv;\nvarying vec3 vNormal;\n\n\nvoid main() {\n\n\tvec4 pos = vec4(position, 1.0);\n\tvec4 worldPos = worldMatrix * pos;\n\tvec4 transformedNormal =  vec4(normal, 1.0) * normalMatrix;\n\tvNormal = transformedNormal.xyz;\n\tvUv = uv;\n\n\n\tgl_PointSize = 10.0;\n\tgl_Position = projectionMatrix * viewMatrix * worldPos;\n}\n" : _ref$vertexShader,
       _ref$fragmentShader = _ref.fragmentShader,
-      fragmentShader = _ref$fragmentShader === undefined ? "precision highp float;\n#define GLSLIFY 1\nvarying vec2 vUv;\n\nvoid main() {\n  gl_FragColor = vec4(vUv, 1.0, 1.0);\n}\n" : _ref$fragmentShader;
+      fragmentShader = _ref$fragmentShader === undefined ? "precision highp float;\n#define GLSLIFY 1\nvarying vec2 vUv;\nuniform float time;\n\nvoid main() {\n  gl_FragColor = vec4(vUv, cos(time), 1.0);\n}\n" : _ref$fragmentShader;
 
   _classCallCheck(this, Material);
 
@@ -460,10 +508,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 
 
+var uniformsDictionnary = {
+  float: 'uniform1f'
+};
+
 var Shader = function () {
   function Shader() {
     var strVs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "#define GLSLIFY 1\nattribute vec3 position;\nattribute vec2 uv;\nattribute vec3 normal;\n\nuniform mat4 worldMatrix;\nuniform mat4 normalMatrix;\nuniform mat4 viewMatrix;\nuniform mat4 projectionMatrix;\n\nvarying vec2 vUv;\nvarying vec3 vNormal;\n\n\nvoid main() {\n\n\tvec4 pos = vec4(position, 1.0);\n\tvec4 worldPos = worldMatrix * pos;\n\tvec4 transformedNormal =  vec4(normal, 1.0) * normalMatrix;\n\tvNormal = transformedNormal.xyz;\n\tvUv = uv;\n\n\n\tgl_PointSize = 10.0;\n\tgl_Position = projectionMatrix * viewMatrix * worldPos;\n}\n";
-    var strFs = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "precision highp float;\n#define GLSLIFY 1\nvarying vec2 vUv;\n\nvoid main() {\n  gl_FragColor = vec4(vUv, 1.0, 1.0);\n}\n";
+    var strFs = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "precision highp float;\n#define GLSLIFY 1\nvarying vec2 vUv;\nuniform float time;\n\nvoid main() {\n  gl_FragColor = vec4(vUv, cos(time), 1.0);\n}\n";
 
     _classCallCheck(this, Shader);
 
