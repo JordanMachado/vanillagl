@@ -6,7 +6,7 @@ export default class Material {
     fog = false,
     lights = false,
     depthTest = true,
-    uniforms = {},
+    uniforms = null,
     drawType = 'triangles',
     side = 'double',
     vertexShader = glslify('./shaders/basic.vert'),

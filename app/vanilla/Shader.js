@@ -1,5 +1,9 @@
 const glslify = require('glslify');
 
+const uniformsDictionnary = {
+  float: 'uniform1f',
+}
+
 export default class Shader {
   constructor(strVs = glslify('./shaders/basic.vert'), strFs = glslify('./shaders/basic.frag')) {
 

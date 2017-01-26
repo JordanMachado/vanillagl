@@ -33,10 +33,15 @@ export default class GL {
       this.currentMesh = mesh[i];
       if (this.currentMesh.material.depthTest) {
         State.enable(gl.DEPTH_TEST);
+      } else {
+        State.disable(gl.DEPTH_TEST);
       }
       this.useShader(this.currentMesh.material.shader);
       this.computeNormalMatrix();
       this.setDefaultUniforms(camera);
+      if (this.currentMesh.material.uniforms) {
+        this.setUniforms();
+      }
 
       this.bindBuffer(this.currentMesh);
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.currentMesh.geometry.indices.buffer);
@@ -68,6 +73,23 @@ export default class GL {
     this.shader.uniform('normalMatrix', 'uniformMatrix4fv', this.normalMatrix);
     this.shader.uniform('viewMatrix', 'uniformMatrix4fv', camera.matrix);
     this.shader.uniform('projectionMatrix', 'uniformMatrix4fv', camera.projection);
+  }
+  setUniforms() {
+    if (this.currentMesh.material.uniforms) {
+      const uniforms = this.currentMesh.material.uniforms;
+      //  console.log(mesh.material.uniforms);
+      for (const key in uniforms) {
+        const _uniform = uniforms[key];
+        if (_uniform.type === 'uniform1i') {
+
+          this.shader.uniform(key, _uniform.type, _uniform.value.index);
+          _uniform.value.bind(_uniform.value.index);
+
+        } else {
+          this.shader.uniform(key, _uniform.type, _uniform.value);
+        }
+      }
+    }
   }
   useShader(shader) {
     if (this.shader === shader) return;

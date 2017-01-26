@@ -9,17 +9,21 @@ const gl = new Vanilla.GL();
 const camera = new Vanilla.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.z = -30;
 
-const material = new Vanilla.Material();
-const material2 = new Vanilla.Material();
-const geom = new Vanilla.BoxGeometry();
-const geom2 = new Vanilla.QuadGeometry(5, 5);
-
-const mesh = new Vanilla.Mesh(geom, material);
-const mesh2 = new Vanilla.Mesh(geom2, material2);
+let time = 0;
+const mesh = new Vanilla.Mesh(
+  new Vanilla.BoxGeometry(),
+  new Vanilla.Material({
+    uniforms: {
+      time: {
+        type: 'uniform1f',
+        value: 1,
+      },
+    },
+  }),
+);
 
 const objects = [];
 objects.push(mesh);
-objects.push(mesh2);
 
 
 document.body.appendChild(gl.canvas);
@@ -33,6 +37,8 @@ listener.add('resize', () => {
 
 function draw() {
   raf(draw);
+  time += 0.1;
+  mesh.material.uniforms.time.value = time;
   mesh.rx += 0.05;
   mesh.rz += 0.02;
 
