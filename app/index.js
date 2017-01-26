@@ -9,10 +9,7 @@ const gl = new Vanilla.GL();
 const camera = new Vanilla.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.z = -30;
 
-// const shader = new Vanilla.Shader();
-const material = new Vanilla.Material({
-  depthTest: false,
-});
+const material = new Vanilla.Material();
 const geom = new Vanilla.BoxGeometry();
 const mesh = new Vanilla.Mesh(geom, material);
 

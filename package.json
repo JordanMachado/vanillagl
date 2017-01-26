@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm run dev",
     "dev": "budo ./app/index.js:build/main.js --dir ./public --live --open -- -t babelify -t glslify",
-    "build": "browserify -t babelify -g glslify app/index.js | uglifyjs -o public/build/main.js"
+    "build": "browserify -t babelify -g glslify app/index.js  -o public/build/main.js"
   },
   "repository": {
     "type": "git",

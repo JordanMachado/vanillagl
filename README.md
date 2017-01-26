@@ -22,6 +22,11 @@ npm start
 ```bash
 npm run build
 ```
+
+# examples
+*  [Cube](http://jojo.ninja/vanillagl/examples/cube/)
+
+
 # Inspiration & Ressources
 
 *  [Leonardo](https://github.com/amelierosser/leonardo/) by [@amelierosser](https://twitter.com/ixviii_io?lang=en)
