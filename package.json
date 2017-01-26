@@ -1,0 +1,48 @@
+{
+  "name": "raymarching-starter-kit",
+  "version": "1.0.0",
+  "description": "simple starter for raymarching ",
+  "main": "app/index.js",
+  "scripts": {
+    "start": "npm run dev",
+    "dev": "budo ./app/index.js:build/main.js --dir ./public --live --open -- -t babelify -t glslify",
+    "build": "browserify -t babelify -g glslify app/index.js | uglifyjs -o public/build/main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:JordanMachado/raymarching-starter-kit.git"
+  },
+  "author": "Jordan Machado",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-eslint": "^7.1.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.2.0",
+    "babel-preset-es2015": "^6.1.18",
+    "babelify": "^7.2.0",
+    "browserify": "^12.0.1",
+    "budo": "^6.0.4",
+    "eslint": "^3.10.0",
+    "eslint-config-airbnb": "^13.0.0",
+    "eslint-plugin-babel": "^3.3.0",
+    "eslint-plugin-import": "^2.2.0",
+    "glslify": "^2.3.1",
+    "stripify": "^3.0.0",
+    "uglifyjs": "^2.4.10"
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ],
+    "plugins": [
+      "transform-es2015-modules-commonjs"
+    ]
+  },
+  "dependencies": {
+    "events": "^1.1.1",
+    "gl-matrix": "^2.3.2",
+    "hex-rgb": "^1.0.0",
+    "mini-listener": "^1.0.4",
+    "raf": "^3.1.0",
+    "ua-device-type": "0.0.4"
+  }
+}

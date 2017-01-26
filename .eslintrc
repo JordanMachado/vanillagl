@@ -1,0 +1,47 @@
+{
+  "extends": "airbnb/base",
+  "env": {
+    "browser":  true,
+    },
+
+  "globals": {
+    "_gaq": true,
+    "_pa": true,
+    "$": true,
+    "app": true,
+    "alert": true,
+    "canvg": true,
+    "console": true,
+    "escape": true,
+    "WAGNER": true,
+    "browser": true,
+    "module": true,
+    "require": true,
+    "System": true,
+    "user": true,
+    "TweenMax": true,
+    "TimelineMax": true,
+    "Power1": true,
+    "Power2": true,
+    "Power3": true,
+    "Power4": true,
+    "gl": true
+  },
+
+  "rules": {
+    "no-labels": [2, { "allowLoop": false, "allowSwitch": false }],
+    "no-unused-vars": 0,
+    "no-new": 0,
+    "no-bitwise": 0,
+    "guard-for-in": 0,
+    "no-restricted-syntax":0,
+    "no-new-func": 0,
+    "no-param-reassign": ["error", { "props": false }],
+    "class-methods-use-this": 0,
+    "no-underscore-dangle": 0,
+    "no-console": 0,
+    "padded-blocks": 0,
+    "id-length": 0,
+    "no-use-before-define": 0
+  }
+}
