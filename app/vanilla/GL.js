@@ -29,17 +29,33 @@ export default class GL {
   }
   render(camera, mesh) {
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-    this.currentMesh = mesh;
-    if (this.currentMesh.material.depthTest) {
-      State.enable(gl.DEPTH_TEST);
-    }
-    this.useShader(this.currentMesh.material.shader);
-    this.computeNormalMatrix();
-    this.setDefaultUniforms(camera);
+    for (let i = 0; i < mesh.length; i += 1) {
+      this.currentMesh = mesh[i];
+      if (this.currentMesh.material.depthTest) {
+        State.enable(gl.DEPTH_TEST);
+      }
+      this.useShader(this.currentMesh.material.shader);
+      this.computeNormalMatrix();
+      this.setDefaultUniforms(camera);
 
-    this.bindBuffer(this.currentMesh);
-    // gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.geometry.bufferIndices);
-    gl.drawElements(gl.TRIANGLES, this.currentMesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
+      this.bindBuffer(this.currentMesh);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.currentMesh.geometry.indices.buffer);
+      switch (this.currentMesh.material.drawType) {
+        case 'triangles':
+          gl.drawElements(gl.TRIANGLES, this.currentMesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
+          break;
+        case 'lines':
+          gl.drawElements(gl.LINES, this.currentMesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
+          break;
+        case 'points':
+          gl.drawElements(gl.POINTS, this.currentMesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
+          break;
+        default:
+
+      }
+
+
+    }
 
   }
   computeNormalMatrix() {
@@ -65,7 +81,6 @@ export default class GL {
       const attrPosition = this.getAttribLoc(this.shader.program, attribute.name);
       gl.vertexAttribPointer(attrPosition, attribute.itemSize, gl.FLOAT, false, 0, 0);
       State.enableAttribute(attrPosition);
-      // gl.enableVertexAttribArray(attrPosition);
     }
   }
   getAttribLoc(program, name) {

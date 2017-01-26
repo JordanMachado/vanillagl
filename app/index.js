@@ -10,8 +10,17 @@ const camera = new Vanilla.PerspectiveCamera(45, window.innerWidth / window.inne
 camera.z = -30;
 
 const material = new Vanilla.Material();
+const material2 = new Vanilla.Material();
 const geom = new Vanilla.BoxGeometry();
+const geom2 = new Vanilla.QuadGeometry(5, 5);
+
 const mesh = new Vanilla.Mesh(geom, material);
+const mesh2 = new Vanilla.Mesh(geom2, material2);
+
+const objects = [];
+objects.push(mesh);
+objects.push(mesh2);
+
 
 document.body.appendChild(gl.canvas);
 
@@ -26,5 +35,6 @@ function draw() {
   raf(draw);
   mesh.rx += 0.05;
   mesh.rz += 0.02;
-  gl.render(camera, mesh);
+
+  gl.render(camera, objects);
 }
