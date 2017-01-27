@@ -1,5 +1,5 @@
 import glm from 'gl-matrix';
-
+// TODO need to find how to update the matrix of parents without calling update matrix for each position etc...
 export default class Object3D {
   constructor() {
 
@@ -22,11 +22,15 @@ export default class Object3D {
     this._scale = glm.vec3.fromValues(1, 1, 1);
 
     this._matrix = glm.mat4.create();
+    this._matrixWorld = glm.mat4.create();
     this._matrixRotation = glm.mat4.create();
     this._matrixScale = glm.mat4.create();
     this._matrixTranslation = glm.mat4.create();
+
+    this.parent = null;
+    this.children = [];
   }
-  _update() {
+  _updateMatrix() {
     glm.vec3.set(this._scale, this._sx, this._sy, this._sz);
     glm.vec3.set(this._rotation, this._rx, this._ry, this._rz);
     glm.vec3.set(this._position, this._x, this._y, this._z);
@@ -45,9 +49,23 @@ export default class Object3D {
     glm.mat4.mul(this._matrix, this._matrixTranslation, this._matrixRotation);
     glm.mat4.mul(this._matrix, this._matrix, this._matrixScale);
 
+    this._updateMatrixWorld();
+
     this._needUpdate = false;
 
 
+  }
+  _updateMatrixWorld() {
+
+    if (this.parent) {
+      glm.mat4.multiply(this._matrixWorld, this.parent.matrixWorld, this._matrix);
+    } else {
+      glm.mat4.copy(this._matrixWorld, this._matrix);
+    }
+
+    for (let i = 0, l = this.children.length; i < l; i += 1) {
+      this.children[i]._updateMatrixWorld();
+    }
   }
   set x(value) {
     this._needUpdate = true;
@@ -86,6 +104,8 @@ export default class Object3D {
   }
   set ry(value) {
     this._needUpdate = true;
+    if (this._needUpdate) this._updateMatrix();
+
     this._ry = value;
   }
   get ry() {
@@ -93,6 +113,7 @@ export default class Object3D {
   }
   set rz(value) {
     this._needUpdate = true;
+    if (this._needUpdate) this._updateMatrix();
     this._rz = value;
   }
   get rz() {
@@ -100,6 +121,7 @@ export default class Object3D {
   }
   set rotation(value) {
     this._needUpdate = true;
+    if (this._needUpdate) this._updateMatrix();
     this._rotation = value;
   }
   get rotation() {
@@ -107,6 +129,7 @@ export default class Object3D {
   }
   set sx(value) {
     this._needUpdate = true;
+    if (this._needUpdate) this._updateMatrix();
     this._sx = value;
   }
   get sx() {
@@ -114,6 +137,7 @@ export default class Object3D {
   }
   set sy(value) {
     this._needUpdate = true;
+    if (this._needUpdate) this._updateMatrix();
     this._sy = value;
   }
   get sy() {
@@ -121,6 +145,7 @@ export default class Object3D {
   }
   set sz(value) {
     this._needUpdate = true;
+    if (this._needUpdate) this._updateMatrix();
     this._sz = value;
   }
   get sz() {
@@ -132,13 +157,22 @@ export default class Object3D {
     this._sy = value[1];
     this._sz = value[2];
     this._scale = value;
+    if (this._needUpdate) this._updateMatrix();
   }
   get scale() {
     return this._scale;
   }
 
   get matrix() {
-    if (this._needUpdate) this._update();
+    if (this._needUpdate) this._updateMatrix();
     return this._matrix;
+  }
+  get matrixWorld() {
+    return this._matrixWorld;
+  }
+  add(object) {
+    // todo check if he has already a parent
+    object.parent = this;
+    this.children.push(object);
   }
 }

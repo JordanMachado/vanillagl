@@ -27,10 +27,10 @@ export default class GL {
     this.canvas.height = window.innerHeight;
     this.gl.viewport(0, 0, window.innerWidth, window.innerHeight);
   }
-  render(camera, mesh) {
+  render(camera, scene) {
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-    for (let i = 0; i < mesh.length; i += 1) {
-      this.currentMesh = mesh[i];
+    for (let i = 0; i < scene.children.length; i += 1) {
+      this.currentMesh = scene.children[i];
       if (this.currentMesh.material.depthTest) {
         State.enable(gl.DEPTH_TEST);
       } else {
@@ -69,7 +69,7 @@ export default class GL {
     glm.mat4.invert(this.normalMatrix, this.currentMesh.matrix);
   }
   setDefaultUniforms(camera) {
-    this.shader.uniform('worldMatrix', 'uniformMatrix4fv', this.currentMesh.matrix);
+    this.shader.uniform('worldMatrix', 'uniformMatrix4fv', this.currentMesh.matrixWorld);
     this.shader.uniform('normalMatrix', 'uniformMatrix4fv', this.normalMatrix);
     this.shader.uniform('viewMatrix', 'uniformMatrix4fv', camera.matrix);
     this.shader.uniform('projectionMatrix', 'uniformMatrix4fv', camera.projection);

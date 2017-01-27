@@ -6,6 +6,7 @@ import * as Vanilla from './vanilla';
 const glslify = require('glslify');
 
 const gl = new Vanilla.GL();
+const scene = new Vanilla.Scene();
 const camera = new Vanilla.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.z = -30;
 
@@ -21,10 +22,23 @@ const mesh = new Vanilla.Mesh(
     },
   }),
 );
+mesh.y = -2;
 
-const objects = [];
-objects.push(mesh);
+const mesh2 = new Vanilla.Mesh(
+  new Vanilla.BoxGeometry(),
+  new Vanilla.Material({
+    uniforms: {
+      time: {
+        type: 'uniform1f',
+        value: 1,
+      },
+    },
+  }),
+);
+mesh2.y = 2;
 
+scene.add(mesh);
+scene.add(mesh2);
 
 document.body.appendChild(gl.canvas);
 
@@ -39,8 +53,9 @@ function draw() {
   raf(draw);
   time += 0.1;
   mesh.material.uniforms.time.value = time;
-  mesh.rx += 0.05;
-  mesh.rz += 0.02;
+  mesh2.material.uniforms.time.value = time;
+  scene.ry += 0.02;
+  // mesh.rz += 0.02;
 
-  gl.render(camera, objects);
+  gl.render(camera, scene);
 }
