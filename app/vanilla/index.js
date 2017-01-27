@@ -5,6 +5,7 @@ import Material from './Material';
 import Mesh from './Mesh';
 import Scene from './Scene';
 import PerspectiveCamera from './cameras/PerspectiveCamera';
+import OrbitControl from './OrbitControl';
 
 console.log('%c VANILLA (ﾉ◕ヮ◕)ﾉ ', 'background: #282828; color: #fffbf4');
 export {
@@ -15,6 +16,7 @@ export {
   BoxGeometry,
   Mesh,
   Scene,
+  OrbitControl,
   Material,
   PerspectiveCamera,
 };

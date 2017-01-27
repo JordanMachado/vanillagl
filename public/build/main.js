@@ -24,6 +24,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 
 var gl = new Vanilla.GL();
+var scene = new Vanilla.Scene();
 var camera = new Vanilla.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.z = -30;
 
@@ -36,9 +37,20 @@ var mesh = new Vanilla.Mesh(new Vanilla.BoxGeometry(), new Vanilla.Material({
     }
   }
 }));
+mesh.y = -2;
 
-var objects = [];
-objects.push(mesh);
+var mesh2 = new Vanilla.Mesh(new Vanilla.BoxGeometry(), new Vanilla.Material({
+  uniforms: {
+    time: {
+      type: 'uniform1f',
+      value: 1
+    }
+  }
+}));
+mesh2.y = 2;
+
+scene.add(mesh);
+scene.add(mesh2);
 
 document.body.appendChild(gl.canvas);
 
@@ -53,13 +65,14 @@ function draw() {
   (0, _raf2.default)(draw);
   time += 0.1;
   mesh.material.uniforms.time.value = time;
-  mesh.rx += 0.05;
-  mesh.rz += 0.02;
+  mesh2.material.uniforms.time.value = time;
+  scene.ry += 0.02;
+  // mesh.rz += 0.02;
 
-  gl.render(camera, objects);
+  gl.render(camera, scene);
 }
 
-},{"./vanilla":14,"gl-matrix":15,"mini-listener":25,"raf":28}],2:[function(require,module,exports){
+},{"./vanilla":15,"gl-matrix":16,"mini-listener":26,"raf":29}],2:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -117,10 +130,10 @@ var GL = function () {
     }
   }, {
     key: 'render',
-    value: function render(camera, mesh) {
+    value: function render(camera, scene) {
       this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-      for (var i = 0; i < mesh.length; i += 1) {
-        this.currentMesh = mesh[i];
+      for (var i = 0; i < scene.children.length; i += 1) {
+        this.currentMesh = scene.children[i];
         if (this.currentMesh.material.depthTest) {
           _State2.default.enable(gl.DEPTH_TEST);
         } else {
@@ -160,7 +173,7 @@ var GL = function () {
   }, {
     key: 'setDefaultUniforms',
     value: function setDefaultUniforms(camera) {
-      this.shader.uniform('worldMatrix', 'uniformMatrix4fv', this.currentMesh.matrix);
+      this.shader.uniform('worldMatrix', 'uniformMatrix4fv', this.currentMesh.matrixWorld);
       this.shader.uniform('normalMatrix', 'uniformMatrix4fv', this.normalMatrix);
       this.shader.uniform('viewMatrix', 'uniformMatrix4fv', camera.matrix);
       this.shader.uniform('projectionMatrix', 'uniformMatrix4fv', camera.projection);
@@ -213,7 +226,7 @@ var GL = function () {
 
 exports.default = GL;
 
-},{"./State":7,"gl-matrix":15}],3:[function(require,module,exports){
+},{"./State":8,"gl-matrix":16}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -266,7 +279,7 @@ var Material = function Material() {
 
 exports.default = Material;
 
-},{"./Shader":6}],4:[function(require,module,exports){
+},{"./Shader":7}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -320,6 +333,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+// TODO need to find how to update the matrix of parents without calling update matrix for each position etc...
 var Object3D = function () {
   function Object3D() {
     _classCallCheck(this, Object3D);
@@ -343,14 +357,18 @@ var Object3D = function () {
     this._scale = _glMatrix2.default.vec3.fromValues(1, 1, 1);
 
     this._matrix = _glMatrix2.default.mat4.create();
+    this._matrixWorld = _glMatrix2.default.mat4.create();
     this._matrixRotation = _glMatrix2.default.mat4.create();
     this._matrixScale = _glMatrix2.default.mat4.create();
     this._matrixTranslation = _glMatrix2.default.mat4.create();
+
+    this.parent = null;
+    this.children = [];
   }
 
   _createClass(Object3D, [{
-    key: '_update',
-    value: function _update() {
+    key: '_updateMatrix',
+    value: function _updateMatrix() {
       _glMatrix2.default.vec3.set(this._scale, this._sx, this._sy, this._sz);
       _glMatrix2.default.vec3.set(this._rotation, this._rx, this._ry, this._rz);
       _glMatrix2.default.vec3.set(this._position, this._x, this._y, this._z);
@@ -369,7 +387,30 @@ var Object3D = function () {
       _glMatrix2.default.mat4.mul(this._matrix, this._matrixTranslation, this._matrixRotation);
       _glMatrix2.default.mat4.mul(this._matrix, this._matrix, this._matrixScale);
 
+      this._updateMatrixWorld();
+
       this._needUpdate = false;
+    }
+  }, {
+    key: '_updateMatrixWorld',
+    value: function _updateMatrixWorld() {
+
+      if (this.parent) {
+        _glMatrix2.default.mat4.multiply(this._matrixWorld, this.parent.matrixWorld, this._matrix);
+      } else {
+        _glMatrix2.default.mat4.copy(this._matrixWorld, this._matrix);
+      }
+
+      for (var i = 0, l = this.children.length; i < l; i += 1) {
+        this.children[i]._updateMatrixWorld();
+      }
+    }
+  }, {
+    key: 'add',
+    value: function add(object) {
+      // todo check if he has already a parent
+      object.parent = this;
+      this.children.push(object);
     }
   }, {
     key: 'x',
@@ -420,6 +461,8 @@ var Object3D = function () {
     key: 'ry',
     set: function set(value) {
       this._needUpdate = true;
+      if (this._needUpdate) this._updateMatrix();
+
       this._ry = value;
     },
     get: function get() {
@@ -429,6 +472,7 @@ var Object3D = function () {
     key: 'rz',
     set: function set(value) {
       this._needUpdate = true;
+      if (this._needUpdate) this._updateMatrix();
       this._rz = value;
     },
     get: function get() {
@@ -438,6 +482,7 @@ var Object3D = function () {
     key: 'rotation',
     set: function set(value) {
       this._needUpdate = true;
+      if (this._needUpdate) this._updateMatrix();
       this._rotation = value;
     },
     get: function get() {
@@ -447,6 +492,7 @@ var Object3D = function () {
     key: 'sx',
     set: function set(value) {
       this._needUpdate = true;
+      if (this._needUpdate) this._updateMatrix();
       this._sx = value;
     },
     get: function get() {
@@ -456,6 +502,7 @@ var Object3D = function () {
     key: 'sy',
     set: function set(value) {
       this._needUpdate = true;
+      if (this._needUpdate) this._updateMatrix();
       this._sy = value;
     },
     get: function get() {
@@ -465,6 +512,7 @@ var Object3D = function () {
     key: 'sz',
     set: function set(value) {
       this._needUpdate = true;
+      if (this._needUpdate) this._updateMatrix();
       this._sz = value;
     },
     get: function get() {
@@ -478,6 +526,7 @@ var Object3D = function () {
       this._sy = value[1];
       this._sz = value[2];
       this._scale = value;
+      if (this._needUpdate) this._updateMatrix();
     },
     get: function get() {
       return this._scale;
@@ -485,8 +534,13 @@ var Object3D = function () {
   }, {
     key: 'matrix',
     get: function get() {
-      if (this._needUpdate) this._update();
+      if (this._needUpdate) this._updateMatrix();
       return this._matrix;
+    }
+  }, {
+    key: 'matrixWorld',
+    get: function get() {
+      return this._matrixWorld;
     }
   }]);
 
@@ -495,7 +549,40 @@ var Object3D = function () {
 
 exports.default = Object3D;
 
-},{"gl-matrix":15}],6:[function(require,module,exports){
+},{"gl-matrix":16}],6:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _Object3D2 = require('./Object3D');
+
+var _Object3D3 = _interopRequireDefault(_Object3D2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Scene = function (_Object3D) {
+  _inherits(Scene, _Object3D);
+
+  function Scene() {
+    _classCallCheck(this, Scene);
+
+    return _possibleConstructorReturn(this, (Scene.__proto__ || Object.getPrototypeOf(Scene)).call(this));
+  }
+
+  return Scene;
+}(_Object3D3.default);
+
+exports.default = Scene;
+
+},{"./Object3D":5}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -571,7 +658,7 @@ var Shader = function () {
 
 exports.default = Shader;
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -631,7 +718,7 @@ var State = function () {
 var state = new State();
 exports.default = state;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -673,7 +760,7 @@ var Camera = function (_Object3D) {
 
 exports.default = Camera;
 
-},{"../Object3D":5,"gl-matrix":15}],9:[function(require,module,exports){
+},{"../Object3D":5,"gl-matrix":16}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -745,7 +832,7 @@ var PerspectiveCamera = function (_Camera) {
 
 exports.default = PerspectiveCamera;
 
-},{"./Camera":8,"gl-matrix":15}],10:[function(require,module,exports){
+},{"./Camera":9,"gl-matrix":16}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -847,7 +934,7 @@ var Box = function (_Geometry) {
 
 exports.default = Box;
 
-},{"./Geometry":12}],11:[function(require,module,exports){
+},{"./Geometry":13}],12:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -873,7 +960,7 @@ exports.Geometry = _Geometry2.default;
 exports.QuadGeometry = _QuadGeometry2.default;
 exports.BoxGeometry = _BoxGeometry2.default;
 
-},{"./BoxGeometry":10,"./Geometry":12,"./QuadGeometry":13}],12:[function(require,module,exports){
+},{"./BoxGeometry":11,"./Geometry":13,"./QuadGeometry":14}],13:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -931,7 +1018,7 @@ var Geometry = function () {
 
 exports.default = Geometry;
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -976,13 +1063,13 @@ var Quad = function (_Geometry) {
 
 exports.default = Quad;
 
-},{"./Geometry":12}],14:[function(require,module,exports){
+},{"./Geometry":13}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.PerspectiveCamera = exports.Material = exports.Mesh = exports.BoxGeometry = exports.QuadGeometry = exports.Geometry = exports.Shader = exports.GL = undefined;
+exports.PerspectiveCamera = exports.Material = exports.Scene = exports.Mesh = exports.BoxGeometry = exports.QuadGeometry = exports.Geometry = exports.Shader = exports.GL = undefined;
 
 var _GL = require('./GL');
 
@@ -1002,6 +1089,10 @@ var _Mesh = require('./Mesh');
 
 var _Mesh2 = _interopRequireDefault(_Mesh);
 
+var _Scene = require('./Scene');
+
+var _Scene2 = _interopRequireDefault(_Scene);
+
 var _PerspectiveCamera = require('./cameras/PerspectiveCamera');
 
 var _PerspectiveCamera2 = _interopRequireDefault(_PerspectiveCamera);
@@ -1015,10 +1106,11 @@ exports.Geometry = _Geometries.Geometry;
 exports.QuadGeometry = _Geometries.QuadGeometry;
 exports.BoxGeometry = _Geometries.BoxGeometry;
 exports.Mesh = _Mesh2.default;
+exports.Scene = _Scene2.default;
 exports.Material = _Material2.default;
 exports.PerspectiveCamera = _PerspectiveCamera2.default;
 
-},{"./GL":2,"./Material":3,"./Mesh":4,"./Shader":6,"./cameras/PerspectiveCamera":9,"./geometry/Geometries":11}],15:[function(require,module,exports){
+},{"./GL":2,"./Material":3,"./Mesh":4,"./Scene":6,"./Shader":7,"./cameras/PerspectiveCamera":10,"./geometry/Geometries":12}],16:[function(require,module,exports){
 /**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -1056,7 +1148,7 @@ exports.quat = require("./gl-matrix/quat.js");
 exports.vec2 = require("./gl-matrix/vec2.js");
 exports.vec3 = require("./gl-matrix/vec3.js");
 exports.vec4 = require("./gl-matrix/vec4.js");
-},{"./gl-matrix/common.js":16,"./gl-matrix/mat2.js":17,"./gl-matrix/mat2d.js":18,"./gl-matrix/mat3.js":19,"./gl-matrix/mat4.js":20,"./gl-matrix/quat.js":21,"./gl-matrix/vec2.js":22,"./gl-matrix/vec3.js":23,"./gl-matrix/vec4.js":24}],16:[function(require,module,exports){
+},{"./gl-matrix/common.js":17,"./gl-matrix/mat2.js":18,"./gl-matrix/mat2d.js":19,"./gl-matrix/mat3.js":20,"./gl-matrix/mat4.js":21,"./gl-matrix/quat.js":22,"./gl-matrix/vec2.js":23,"./gl-matrix/vec3.js":24,"./gl-matrix/vec4.js":25}],17:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1128,7 +1220,7 @@ glMatrix.equals = function(a, b) {
 
 module.exports = glMatrix;
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1566,7 +1658,7 @@ mat2.multiplyScalarAndAdd = function(out, a, b, scale) {
 
 module.exports = mat2;
 
-},{"./common.js":16}],18:[function(require,module,exports){
+},{"./common.js":17}],19:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -2037,7 +2129,7 @@ mat2d.equals = function (a, b) {
 
 module.exports = mat2d;
 
-},{"./common.js":16}],19:[function(require,module,exports){
+},{"./common.js":17}],20:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -2785,7 +2877,7 @@ mat3.equals = function (a, b) {
 
 module.exports = mat3;
 
-},{"./common.js":16}],20:[function(require,module,exports){
+},{"./common.js":17}],21:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -4923,7 +5015,7 @@ mat4.equals = function (a, b) {
 
 module.exports = mat4;
 
-},{"./common.js":16}],21:[function(require,module,exports){
+},{"./common.js":17}],22:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -5525,7 +5617,7 @@ quat.equals = vec4.equals;
 
 module.exports = quat;
 
-},{"./common.js":16,"./mat3.js":19,"./vec3.js":23,"./vec4.js":24}],22:[function(require,module,exports){
+},{"./common.js":17,"./mat3.js":20,"./vec3.js":24,"./vec4.js":25}],23:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -6114,7 +6206,7 @@ vec2.equals = function (a, b) {
 
 module.exports = vec2;
 
-},{"./common.js":16}],23:[function(require,module,exports){
+},{"./common.js":17}],24:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -6893,7 +6985,7 @@ vec3.equals = function (a, b) {
 
 module.exports = vec3;
 
-},{"./common.js":16}],24:[function(require,module,exports){
+},{"./common.js":17}],25:[function(require,module,exports){
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -7504,7 +7596,7 @@ vec4.equals = function (a, b) {
 
 module.exports = vec4;
 
-},{"./common.js":16}],25:[function(require,module,exports){
+},{"./common.js":17}],26:[function(require,module,exports){
 class Listener {
   constructor() {
     this._events = {};
@@ -7544,7 +7636,7 @@ const listener = new Listener();
 // export default listener;
 module.exports = listener;
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 (function (process){
 // Generated by CoffeeScript 1.7.1
 (function() {
@@ -7580,7 +7672,7 @@ module.exports = listener;
 }).call(this);
 
 }).call(this,require('_process'))
-},{"_process":27}],27:[function(require,module,exports){
+},{"_process":28}],28:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -7762,7 +7854,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 (function (global){
 var now = require('performance-now')
   , root = typeof window === 'undefined' ? global : window
@@ -7838,4 +7930,4 @@ module.exports.polyfill = function() {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"performance-now":26}]},{},[1]);
+},{"performance-now":27}]},{},[1]);

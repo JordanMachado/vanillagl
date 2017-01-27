@@ -9,10 +9,10 @@ const gl = new Vanilla.GL();
 const scene = new Vanilla.Scene();
 const camera = new Vanilla.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.z = -30;
-
+const controls = new Vanilla.OrbitControl(camera);
 let time = 0;
 const mesh = new Vanilla.Mesh(
-  new Vanilla.BoxGeometry(),
+  new Vanilla.QuadGeometry(),
   new Vanilla.Material({
     uniforms: {
       time: {
@@ -55,7 +55,9 @@ function draw() {
   mesh.material.uniforms.time.value = time;
   mesh2.material.uniforms.time.value = time;
   scene.ry += 0.02;
-  // mesh.rz += 0.02;
+  mesh.rz += 0.02;
+  mesh2.rx -= 0.02;
+  controls.update();
 
   gl.render(camera, scene);
 }
