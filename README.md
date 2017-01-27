@@ -26,6 +26,7 @@ npm run build
 # examples
 *  [Cube](http://jojo.ninja/vanillagl/examples/cube/)
 *  [Uniforms](http://jojo.ninja/vanillagl/examples/cube-uniforms/)
+*  [parent](http://jojo.ninja/vanillagl/examples/cube-parent/)
 
 
 # Inspiration & Ressources
