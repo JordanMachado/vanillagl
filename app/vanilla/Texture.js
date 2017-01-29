@@ -3,7 +3,7 @@ let index = 0;
 export default class Texture {
   constructor(image) {
     index++;
-    if(!image) {
+    if (!image) {
       image = document.createElement('canvas');
       image.width = 1;
       image.height = 1;

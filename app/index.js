@@ -16,7 +16,7 @@ const gl = new Vanilla.GL();
 const scene = new Vanilla.Scene();
 const camera = new Vanilla.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.z = -30;
-const controls = new Vanilla.OrbitControl(camera);
+// const controls = new Vanilla.OrbitControl(camera);
 let time = 0;
 const mesh = new Vanilla.Mesh(
   new Vanilla.BoxGeometry(2, 2, 2),
