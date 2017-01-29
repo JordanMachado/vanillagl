@@ -32,6 +32,7 @@
     "max-len":["error", {"code":150}],
     "no-labels": [2, { "allowLoop": false, "allowSwitch": false }],
     "no-unused-vars": 0,
+    "no-plusplus": 0,
     "no-new": 0,
     "no-bitwise": 0,
     "guard-for-in": 0,

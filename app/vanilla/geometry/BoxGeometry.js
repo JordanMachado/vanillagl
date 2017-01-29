@@ -42,6 +42,7 @@ export default class Box extends Geometry {
     for (let i = 0; i < vertices.length; i += 3) {
       vertices[i] *= width;
       vertices[i + 1] *= height;
+      vertices[i + 2] *= depth;
     }
     const indices = [
       0, 1, 2, 0, 2, 3,    // front

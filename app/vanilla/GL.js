@@ -81,7 +81,7 @@ export default class GL {
       for (const key in uniforms) {
         const _uniform = uniforms[key];
         if (_uniform.type === 'uniform1i') {
-
+          // console.log(_uniform.value.bind);
           this.shader.uniform(key, _uniform.type, _uniform.value.index);
           _uniform.value.bind(_uniform.value.index);
 
