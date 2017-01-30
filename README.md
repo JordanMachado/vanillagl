@@ -4,6 +4,9 @@ Little 3D framework.
 
 The goal of this project is to learn webgl & glsl stuff by making my own framework (big inspiration from framework below)
 
+
+[examples](https://jojo.ninja/vanillagl/examples/)
+
 # Installation
 ```bash
 npm i
@@ -23,19 +26,19 @@ npm start
 npm run build
 ```
 
-# examples
+# Examples
 
-All the examples are [there](https://jojo.ninja/vanillagl/examples/)
+All the examples are [THERE](https://jojo.ninja/vanillagl/examples/)
 
 
 # Examples (WIP)
 
-## Run examples in developement
+## Run example in developement
 ```bash
 npm run example {exampleName}
 ```
 
-## Build examples
+## Build example
 ```bash
 npm run example {exampleName} build
 ```
