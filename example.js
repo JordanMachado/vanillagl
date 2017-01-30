@@ -4,6 +4,7 @@ const babelify = require('babelify');
 const path = require('path');
 const browserify = require('browserify');
 const fs = require('fs')
+const glslify = require('glslify');
 
 const entry = argv._[0];
 const examplesDir = path.resolve(__dirname, 'examples');
@@ -23,18 +24,21 @@ function startDev() {
     live: true,             // live reload
     dir: examplesDir,
     browserify: {
-      transform: babelify,
+      transform: [babelify, glslify],
     },
   });
 }
 
 function build() {
-  console.log('cc');
+  console.log('Build ...');
   const b = browserify(entryFile, {
     debug: false,
   });
+  b.transform(babelify)
+  b.transform(glslify)
   b.bundle((err, src) => {
     fs.writeFile(`${examplesDir}/${entry}/bundle.js`, src, (err) => {
+      console.log('Done :D');
     });
   });
 }
