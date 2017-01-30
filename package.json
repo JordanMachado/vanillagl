@@ -6,7 +6,8 @@
   "scripts": {
     "start": "npm run dev",
     "dev": "budo ./app/index.js:build/main.js --dir ./public --live --open -- -t babelify -t glslify",
-    "build": "browserify -t babelify -g glslify app/index.js  -o public/build/main.js"
+    "build": "browserify -t babelify -g glslify app/index.js  -o public/build/main.js",
+    "example": "node example.js"
   },
   "repository": {
     "type": "git",
@@ -26,6 +27,7 @@
     "eslint-plugin-babel": "^3.3.0",
     "eslint-plugin-import": "^2.2.0",
     "glslify": "^2.3.1",
+    "minimist": "^1.2.0",
     "stripify": "^3.0.0",
     "uglifyjs": "^2.4.10"
   },

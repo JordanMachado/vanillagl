@@ -1,4 +1,5 @@
 import listener from 'mini-listener';
+
 function clamp(num, min, max) {
   return num <= min ? min : num >= max ? max : num;
 }
@@ -26,7 +27,6 @@ export default class OrbitControl {
 
   }
   mousedown(e) {
-    console.log('down');
     this.dragging = true;
     this.start = {
       x: e.clientX / window.innerWidth,
@@ -36,7 +36,6 @@ export default class OrbitControl {
     this.prevRy = this.ry;
   }
   mouseup() {
-    console.log('up');
     this.dragging = false;
     this.distance.x = 0;
     this.distance.y = 0;

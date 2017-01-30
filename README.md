@@ -30,6 +30,19 @@ npm run build
 *  [Texture](http://jojo.ninja/vanillagl/examples/cube-textured/)
 
 
+# Examples (WIP)
+
+## Run examples in developement
+```bash
+npm run example {exampleName}
+```
+
+## Build examples
+```bash
+npm run example {exampleName} build
+```
+
+
 # Inspiration & Ressources
 
 *  [Leonardo](https://github.com/amelierosser/leonardo/) by [@amelierosser](https://twitter.com/ixviii_io?lang=en)

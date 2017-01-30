@@ -33,7 +33,6 @@ const mesh = new Vanilla.Mesh(
     },
   }),
 );
-mesh.y = -2;
 
 scene.add(mesh);
 
