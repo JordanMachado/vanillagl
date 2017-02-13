@@ -6,7 +6,7 @@ import * as Vanilla from './vanilla';
 const glslify = require('glslify');
 
 
-const loader = new Vanilla.Loader();
+const loader = window.loader = new Vanilla.Loader();
 loader.load(['assets/brick.jpg', 'assets/normal.png'], () => {
   mesh.material.uniforms.map.value = loader.textures.brick;
 });

@@ -10,7 +10,7 @@ export default class Texture {
     }
 
     this.texture = gl.createTexture();
-    this.texture.image = image;
+    console.log('this.texture',this.texture);
 
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -19,13 +19,13 @@ export default class Texture {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.bindTexture(gl.TEXTURE_2D, null);
 
-    this.texture.image = image;
+    // this.texture.image = image;
     this.index = index;
     // gl.activeTexture(gl.TEXTURE0 + index);
 
   }
   bind(tindex = 0) {
-    gl.activeTexture(gl.TEXTURE0 + tindex);
+    gl.activeTexture(gl.TEXTURE0 + this.index);
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
   }
 }

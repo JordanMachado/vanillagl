@@ -83,7 +83,7 @@ export default class GL {
         if (_uniform.type === 'uniform1i') {
           // console.log(_uniform.value.bind);
           this.shader.uniform(key, _uniform.type, _uniform.value.index);
-          _uniform.value.bind(_uniform.value.index);
+          _uniform.value.bind();
 
         } else {
           this.shader.uniform(key, _uniform.type, _uniform.value);
