@@ -1,7 +1,7 @@
 # Vanilla GL
 
 
-CURRENTLY SET ASIDE I NEED TO [ LEARN WORK LEARN WORK LEARN WORK ](https://www.youtube.com/watch?v=Qp9psZmAM_Y)
+CURRENTLY SET ASIDE I NEED TO [ LEARN WORK LEARN WORK LEARN WORK ](https://youtu.be/Qp9psZmAM_Y?t=19s)
 
 
 Little 3D framework.
