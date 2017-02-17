@@ -1,5 +1,6 @@
 # Vanilla GL
 
+CURRENTLY SET ASIDE I NEED TO [ LEARN WORK LEARN WORK LEARN WORK ](https://www.youtube.com/watch?v=Qp9psZmAM_Y)
 Little 3D framework.
 
 The goal of this project is to learn webgl & glsl stuff by making my own framework (big inspiration from framework below)
